@@ -4,6 +4,8 @@ import Home from './pages/Home'
 import Gallery from './pages/Gallery'
 import About from './pages/About'
 import Contact from './pages/Contact'
+import Login from './pages/admin/Login'
+import Dashboard from './pages/admin/Dashboard'
 
 function App() {
   return (
@@ -14,6 +16,8 @@ function App() {
         <Route path="/gallery" element={<Gallery />} />
         <Route path="/about" element={<About />} />
         <Route path="/contact" element={<Contact />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/admin" element={<Dashboard />} />
       </Routes>
     </>
   )
