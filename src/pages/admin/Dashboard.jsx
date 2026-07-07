@@ -14,7 +14,7 @@ function Dashboard() {
       setSession(session)
       setLoading(false)
       if (!session) {
-        navigate('/login')
+        navigate('//caledeacces1988')
       }
     })
   }, [navigate])
