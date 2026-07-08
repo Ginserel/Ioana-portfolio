@@ -6,6 +6,7 @@ import About from './pages/About'
 import Contact from './pages/Contact'
 import Login from './pages/admin/Login'
 import Dashboard from './pages/admin/Dashboard'
+import ProjectForm from './pages/admin/ProjectForm'
 
 function App() {
   return (
@@ -18,6 +19,8 @@ function App() {
         <Route path="/contact" element={<Contact />} />
         <Route path="/caledeacces1988" element={<Login />} />
         <Route path="/admin" element={<Dashboard />} />
+        <Route path="/admin/new" element={<ProjectForm />} />
+        <Route path="/admin/edit/:id" element={<ProjectForm />} />
       </Routes>
     </>
   )
