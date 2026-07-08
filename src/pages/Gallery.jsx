@@ -30,26 +30,22 @@ function Gallery() {
   }
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">Gallery</h1>
-      <div className="grid grid-cols-3 gap-4">
+    <div className="px-6 md:px-10 py-16">
+      <h1 className="font-display text-4xl mb-10">Gallery</h1>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
         {projects.map((project) => (
-          <Link
-            key={project.id}
-            to={`/project/${project.id}`}
-            className="border rounded-lg overflow-hidden hover:shadow-md transition-shadow"
-          >
-            <img
-              src={project.cover_image_url}
-              alt={project.title}
-              className="w-full h-48 object-cover"
-            />
-            <div className="p-3">
-              <h2 className="font-medium">{project.title}</h2>
-              <p className="text-sm text-gray-500">
-                {categoryLabel(project.category)}
-              </p>
+          <Link key={project.id} to={`/project/${project.id}`} className="group">
+            <div className="overflow-hidden rounded-xl mb-3">
+              <img
+                src={project.cover_image_url}
+                alt={project.title}
+                className="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-500"
+              />
             </div>
+            <h2 className="font-medium">{project.title}</h2>
+            <p className="text-xs uppercase tracking-widest text-neutral-400 mt-1">
+              {categoryLabel(project.category)}
+            </p>
           </Link>
         ))}
       </div>

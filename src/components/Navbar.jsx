@@ -20,17 +20,18 @@ function Navbar() {
   }, [])
 
   return (
-    <nav className="flex items-center justify-between px-6 py-4 border-b">
-      <span className="font-medium">Ioana Dobrin</span>
-      <div className="flex gap-6 text-sm items-center">
-        <Link to="/">Home</Link>
-        <Link to="/gallery">Gallery</Link>
-        <Link to="/about">About</Link>
-        <Link to="/contact">Contact</Link>
+    <nav className="flex items-center justify-between px-6 md:px-10 py-5">
+      <Link to="/" className="font-display text-lg tracking-tight">
+        Ioana Dobrin
+      </Link>
+      <div className="flex gap-5 md:gap-8 text-sm items-center text-neutral-600">
+        <Link to="/gallery" className="hover:text-neutral-900 transition-colors">Gallery</Link>
+        <Link to="/about" className="hover:text-neutral-900 transition-colors">About</Link>
+        <Link to="/contact" className="hover:text-neutral-900 transition-colors">Contact</Link>
         {session && (
           <Link
             to="/admin"
-            className="bg-black text-white px-3 py-1 rounded-lg"
+            className="bg-neutral-900 text-white px-3 py-1.5 rounded-full text-xs"
           >
             Admin
           </Link>

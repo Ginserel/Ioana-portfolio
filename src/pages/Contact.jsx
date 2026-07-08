@@ -30,7 +30,7 @@ function Contact() {
 
   return (
     <div className="max-w-xl mx-auto px-6 py-16">
-      <h1 className="text-3xl font-bold mb-6">Get in touch</h1>
+      <h1 className="font-display text-4xl mb-8">Get in touch</h1>
       <div className="flex flex-col gap-4">
         <input
           type="text"
@@ -55,11 +55,11 @@ function Contact() {
         />
         <button
           onClick={handleSubmit}
-          className="bg-black text-white px-6 py-3 rounded-lg"
+          className="bg-neutral-900 text-white px-8 py-3 rounded-full text-sm hover:bg-neutral-700 transition-colors"
         >
           Send message
         </button>
-        {status && <p className="text-sm text-gray-600">{status}</p>}
+        {status && <p className="text-sm text-neutral-500">{status}</p>}
       </div>
     </div>
   )

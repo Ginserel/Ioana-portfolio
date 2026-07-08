@@ -33,15 +33,19 @@ function ProjectDetail() {
   if (!project) return <p className="p-6">Project not found.</p>
 
   return (
-    <div className="max-w-3xl mx-auto px-6 py-12">
-      <Link to="/gallery" className="text-sm underline text-gray-600">
+    <div className="max-w-3xl mx-auto px-6 py-16">
+      <Link
+        to="/gallery"
+        className="text-sm text-neutral-400 hover:text-neutral-900 transition-colors"
+      >
         ← Back to gallery
       </Link>
 
-      <h1 className="text-3xl font-bold mt-4 mb-2">{project.title}</h1>
+      <h1 className="font-display text-4xl md:text-5xl mt-6 mb-3">
+        {project.title}
+      </h1>
 
-      {/* Meta line: category, year, client - only show what exists */}
-      <p className="text-sm text-gray-500 mb-6">
+      <p className="text-xs uppercase tracking-widest text-neutral-400 mb-10">
         {categoryLabel(project.category)}
         {project.year && ` · ${project.year}`}
         {project.client && ` · for ${project.client}`}
@@ -50,10 +54,10 @@ function ProjectDetail() {
       <img
         src={project.cover_image_url}
         alt={project.title}
-        className="w-full rounded-lg mb-6"
+        className="w-full rounded-xl mb-10"
       />
 
-      <p className="text-gray-700 whitespace-pre-line">
+      <p className="text-neutral-600 leading-relaxed whitespace-pre-line">
         {project.description}
       </p>
     </div>
