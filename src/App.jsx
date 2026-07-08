@@ -7,6 +7,8 @@ import Contact from './pages/Contact'
 import Login from './pages/admin/Login'
 import Dashboard from './pages/admin/Dashboard'
 import ProjectForm from './pages/admin/ProjectForm'
+import ProjectDetail from './pages/ProjectDetail'
+
 
 function App() {
   return (
@@ -21,6 +23,7 @@ function App() {
         <Route path="/admin" element={<Dashboard />} />
         <Route path="/admin/new" element={<ProjectForm />} />
         <Route path="/admin/edit/:id" element={<ProjectForm />} />
+        <Route path="/project/:id" element={<ProjectDetail />} />
       </Routes>
     </>
   )

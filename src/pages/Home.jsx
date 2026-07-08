@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
+import { categoryLabel } from '../lib/categories'
 
 function Home() {
   const [featured, setFeatured] = useState([])
@@ -51,7 +52,7 @@ function Home() {
               />
               <div className="p-3">
                 <h3 className="font-medium">{project.title}</h3>
-                <p className="text-sm text-gray-500">{project.category}</p>
+                <p className="text-sm text-gray-500">{categoryLabel(project.category)}</p>
               </div>
             </div>
           ))}

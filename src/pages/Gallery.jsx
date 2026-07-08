@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabaseClient'
+import { Link } from 'react-router-dom'
+import { categoryLabel } from '../lib/categories'
 
 function Gallery() {
   const [projects, setProjects] = useState([])
@@ -32,7 +34,11 @@ function Gallery() {
       <h1 className="text-2xl font-bold mb-4">Gallery</h1>
       <div className="grid grid-cols-3 gap-4">
         {projects.map((project) => (
-          <div key={project.id} className="border rounded-lg overflow-hidden">
+          <Link
+            key={project.id}
+            to={`/project/${project.id}`}
+            className="border rounded-lg overflow-hidden hover:shadow-md transition-shadow"
+          >
             <img
               src={project.cover_image_url}
               alt={project.title}
@@ -40,9 +46,11 @@ function Gallery() {
             />
             <div className="p-3">
               <h2 className="font-medium">{project.title}</h2>
-              <p className="text-sm text-gray-500">{project.category}</p>
+              <p className="text-sm text-gray-500">
+                {categoryLabel(project.category)}
+              </p>
             </div>
-          </div>
+          </Link>
         ))}
       </div>
     </div>
