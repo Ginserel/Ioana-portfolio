@@ -51,15 +51,55 @@ function ProjectDetail() {
         {project.client && ` · for ${project.client}`}
       </p>
 
+      {/* Cover image always shows first */}
       <img
         src={project.cover_image_url}
         alt={project.title}
         className="w-full rounded-xl mb-10"
       />
 
-      <p className="text-neutral-600 leading-relaxed whitespace-pre-line">
-        {project.description}
-      </p>
+      {/* Render each block in order. project.blocks is the array from the database.
+          The ?. and || [] guard against it being null on older projects. */}
+      <div className="flex flex-col gap-10">
+        {(project.blocks || []).map((block, index) => {
+          // A text block: show heading (if any) and body (if any)
+          if (block.type === 'text') {
+            return (
+              <div key={index}>
+                {block.heading && (
+                  <h2 className="font-display text-2xl mb-3">{block.heading}</h2>
+                )}
+                {block.body && (
+                  <p className="text-neutral-600 leading-relaxed whitespace-pre-line">
+                    {block.body}
+                  </p>
+                )}
+              </div>
+            )
+          }
+
+          // An image block: full-width image, optional caption below
+          if (block.type === 'image') {
+            return (
+              <figure key={index}>
+                <img
+                  src={block.url}
+                  alt={block.caption || project.title}
+                  className="w-full rounded-xl"
+                />
+                {block.caption && (
+                  <figcaption className="text-sm text-neutral-400 mt-2 text-center">
+                    {block.caption}
+                  </figcaption>
+                )}
+              </figure>
+            )
+          }
+
+          // Unknown block type - render nothing
+          return null
+        })}
+      </div>
     </div>
   )
 }

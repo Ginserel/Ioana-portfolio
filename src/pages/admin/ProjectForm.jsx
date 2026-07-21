@@ -11,11 +11,15 @@ function ProjectForm() {
   const navigate = useNavigate()
   // Boolean(id) converts id to true/false: id exists = editing, no id = adding new
   const isEditing = Boolean(id)
+  
+  // The array of content blocks. Each item is an object like
+  // { type: 'text', heading: '', body: '' }
+  const [blocks, setBlocks] = useState([])
 
   // One piece of state for every form field
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
-  const [category, setCategory] = useState('fine_art') // default selection
+  const [category, setCategory] = useState('fashion_licensing') // default selection
   const [year, setYear] = useState('')
   const [client, setClient] = useState('')
   const [featured, setFeatured] = useState(false)
@@ -63,10 +67,52 @@ function ProjectForm() {
       setClient(data.client || '')
       setFeatured(data.featured || false)
       setExistingCoverUrl(data.cover_image_url || '')
+      setBlocks(data.blocks || [])
     }
 
     fetchProject()
   }, [id, isEditing])
+
+  // Add a new empty text block to the end of the array
+  function addTextBlock() {
+    // We create a BRAND NEW array: spread the old blocks, add the new one.
+    // Never modify the existing array directly - React needs a new array
+    // to notice the change and re-render.
+    setBlocks([...blocks, { type: 'text', heading: '', body: '' }])
+  }
+
+  // Update one field of one block, identified by its position (index)
+  function updateBlock(index, field, value) {
+    // .map builds a new array. For the block at our index, return a copy
+    // with the changed field. For all others, return them unchanged.
+    const updated = blocks.map((block, i) =>
+      i === index ? { ...block, [field]: value } : block
+    )
+    setBlocks(updated)
+  }
+
+  // Remove the block at a given position
+  function removeBlock(index) {
+    // .filter keeps every block EXCEPT the one at our index
+    setBlocks(blocks.filter((_, i) => i !== index))
+  }
+  // Move a block one position earlier in the array (towards the top)
+  function moveBlockUp(index) {
+    if (index === 0) return // already at the top, nothing to do
+    const updated = [...blocks] // copy the array
+    // Swap this block with the one above it
+    ;[updated[index - 1], updated[index]] = [updated[index], updated[index - 1]]
+    setBlocks(updated)
+  }
+  
+
+  // Move a block one position later (towards the bottom)
+  function moveBlockDown(index) {
+    if (index === blocks.length - 1) return // already at the bottom
+    const updated = [...blocks]
+    ;[updated[index], updated[index + 1]] = [updated[index + 1], updated[index]]
+    setBlocks(updated)
+  }
 
   // THE MAIN SAVE FUNCTION - runs when "Save project" is clicked
   async function handleSave() {
@@ -120,7 +166,9 @@ function ProjectForm() {
       client: client || null,             // empty string becomes NULL
       featured,
       cover_image_url: coverUrl,
+          blocks,
     }
+    
 
     let error
 
@@ -177,9 +225,10 @@ function ProjectForm() {
           onChange={(e) => setCategory(e.target.value)}
           className="border rounded-lg px-4 py-2"
         >
-          <option value="fine_art">Fine art</option>
+          <option value="fashion_licensing">Fashion licensing</option>
           <option value="graphic_design">Graphic design</option>
-          <option value="ux_ui">UX / UI</option>
+          <option value="illustration">Illustration</option>
+          <option value="fine_art">Fine art</option>
         </select>
         <input
           type="number"
@@ -224,6 +273,71 @@ function ProjectForm() {
             accept="image/*"
             onChange={(e) => setCoverFile(e.target.files[0])}
           />
+        </div>
+
+        {/* Content blocks editor */}
+        <div className="border-t pt-4 mt-2">
+          <p className="text-sm font-medium mb-3">Content blocks</p>
+
+          {/* Render an editable card for each block in state */}
+          {blocks.map((block, index) => (
+            <div key={index} className="border rounded-lg p-3 mb-3 bg-neutral-50">
+              {block.type === 'text' && (
+                <div className="flex flex-col gap-2">
+                  <input
+                    type="text"
+                    placeholder="Heading (optional)"
+                    value={block.heading}
+                    onChange={(e) => updateBlock(index, 'heading', e.target.value)}
+                    className="border rounded-lg px-3 py-2 text-sm"
+                  />
+                  <textarea
+                    placeholder="Body text (optional)"
+                    rows="3"
+                    value={block.body}
+                    onChange={(e) => updateBlock(index, 'body', e.target.value)}
+                    className="border rounded-lg px-3 py-2 text-sm"
+                  />
+                </div>
+              )}
+
+              {/* Reorder and remove controls */}
+              <div className="flex gap-3 mt-2 text-xs">
+                <button
+                  type="button"
+                  onClick={() => moveBlockUp(index)}
+                  disabled={index === 0}
+                  className="underline disabled:opacity-30"
+                >
+                  ↑ Up
+                </button>
+                <button
+                  type="button"
+                  onClick={() => moveBlockDown(index)}
+                  disabled={index === blocks.length - 1}
+                  className="underline disabled:opacity-30"
+                >
+                  ↓ Down
+                </button>
+                <button
+                  type="button"
+                  onClick={() => removeBlock(index)}
+                  className="text-red-600 underline"
+                >
+                  Remove
+                </button>
+              </div>
+            </div>
+          ))}
+
+          {/* Button to add a new text block */}
+          <button
+            type="button"
+            onClick={addTextBlock}
+            className="text-sm border rounded-lg px-3 py-2"
+          >
+            + Add text block
+          </button>
         </div>
 
         {/* disabled={saving} stops double-clicks while a save is in progress */}

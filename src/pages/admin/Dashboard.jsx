@@ -63,6 +63,24 @@ function Dashboard() {
     }
   }
 
+  // Delete a message after confirmation - same pattern as project delete
+  async function handleDeleteMessage(msg) {
+    const ok = window.confirm(`Delete message from ${msg.name}?`)
+    if (!ok) return
+
+    const { error } = await supabase
+      .from('messages')
+      .delete()
+      .eq('id', msg.id)
+
+    if (error) {
+      console.error(error)
+      alert('Delete failed. Check the console.')
+    } else {
+      loadData()
+    }
+  }
+
   async function handleLogout() {
     await supabase.auth.signOut()
     navigate('/')
@@ -143,11 +161,42 @@ function Dashboard() {
       <div className="flex flex-col gap-3">
         {messages.map((msg) => (
           <div key={msg.id} className="border rounded-lg p-4">
-            <p className="font-medium">
-              {msg.name}{' '}
-              <span className="text-sm text-gray-500">({msg.email})</span>
-            </p>
-            <p className="text-gray-700 mt-1">{msg.message}</p>
+            <div className="flex items-start justify-between">
+              <div>
+                <p className="font-medium">
+                  {msg.name}{' '}
+                  <span className="text-sm text-neutral-400">({msg.email})</span>
+                </p>
+                {/* toLocaleDateString formats the raw timestamp into a readable date */}
+                <p className="text-xs text-neutral-400">
+                  {new Date(msg.created_at).toLocaleDateString('en-GB', {
+                    day: 'numeric',
+                    month: 'short',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  })}
+                </p>
+              </div>
+              <div className="flex gap-3 text-sm">
+                {/* mailto: opens the default email app with the address pre-filled */}
+                <a
+                  href={`https://mail.google.com/mail/?view=cm&to=${msg.email}&su=Re: your message`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="underline"
+                >
+                  Reply
+                </a>
+                <button
+                  onClick={() => handleDeleteMessage(msg)}
+                  className="text-red-600 underline"
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+            <p className="text-neutral-600 mt-2">{msg.message}</p>
           </div>
         ))}
       </div>
