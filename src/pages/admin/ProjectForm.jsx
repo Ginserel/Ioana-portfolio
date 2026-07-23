@@ -31,6 +31,8 @@ function ProjectForm() {
   const [saving, setSaving] = useState(false)
   // Feedback message shown to the user (errors, validation)
   const [status, setStatus] = useState('')
+  // Which block index is currently uploading an image (null = none)
+  const [uploadingIndex, setUploadingIndex] = useState(null)
 
   // SECURITY CHECK - runs once when page loads.
   // If nobody is logged in, kick them out to the hidden login page.
@@ -81,14 +83,49 @@ function ProjectForm() {
     setBlocks([...blocks, { type: 'text', heading: '', body: '' }])
   }
 
+  // Add a new empty image block to the end
+  function addImageBlock() {
+    setBlocks([...blocks, { type: 'image', url: '', caption: '' }])
+  }
+
+  // Upload a file for one specific block, then store its URL in that block
+  async function handleBlockImageUpload(index, file) {
+    if (!file) return
+
+    setUploadingIndex(index) // show "Uploading..." on this block
+
+    // Same unique-filename trick as the cover image
+    const fileName = `${Date.now()}-${file.name}`
+
+    const { error: uploadError } = await supabase.storage
+      .from('project-images')
+      .upload(fileName, file)
+
+    if (uploadError) {
+      console.error(uploadError)
+      setStatus('Image upload failed.')
+      setUploadingIndex(null)
+      return
+    }
+
+    const { data: urlData } = supabase.storage
+      .from('project-images')
+      .getPublicUrl(fileName)
+
+    // Store the resulting URL inside this block
+    updateBlock(index, 'url', urlData.publicUrl)
+    setUploadingIndex(null)
+  }
+
   // Update one field of one block, identified by its position (index)
   function updateBlock(index, field, value) {
-    // .map builds a new array. For the block at our index, return a copy
-    // with the changed field. For all others, return them unchanged.
-    const updated = blocks.map((block, i) =>
-      i === index ? { ...block, [field]: value } : block
+    // Using the "prev =>" form guarantees we work from the LATEST blocks,
+    // which matters when this runs after an await (image upload)
+    setBlocks((prev) =>
+      prev.map((block, i) =>
+        i === index ? { ...block, [field]: value } : block
+      )
     )
-    setBlocks(updated)
   }
 
   // Remove the block at a given position
@@ -301,6 +338,38 @@ function ProjectForm() {
                 </div>
               )}
 
+              {block.type === 'image' && (
+                <div className="flex flex-col gap-2">
+                  {/* Preview once uploaded */}
+                  {block.url && (
+                    <img
+                      src={block.url}
+                      alt={block.caption || 'Block image'}
+                      className="w-40 h-28 object-cover rounded-lg"
+                    />
+                  )}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) =>
+                      handleBlockImageUpload(index, e.target.files[0])
+                    }
+                    className="text-sm"
+                  />
+                  {/* Feedback while the file is going up */}
+                  {uploadingIndex === index && (
+                    <p className="text-xs text-neutral-500">Uploading...</p>
+                  )}
+                  <input
+                    type="text"
+                    placeholder="Caption (optional)"
+                    value={block.caption}
+                    onChange={(e) => updateBlock(index, 'caption', e.target.value)}
+                    className="border rounded-lg px-3 py-2 text-sm"
+                  />
+                </div>
+              )}
+
               {/* Reorder and remove controls */}
               <div className="flex gap-3 mt-2 text-xs">
                 <button
@@ -330,15 +399,25 @@ function ProjectForm() {
             </div>
           ))}
 
-          {/* Button to add a new text block */}
-          <button
-            type="button"
-            onClick={addTextBlock}
-            className="text-sm border rounded-lg px-3 py-2"
-          >
-            + Add text block
-          </button>
         </div>
+
+        {/* Buttons to add blocks */}
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={addTextBlock}
+              className="text-sm border rounded-lg px-3 py-2"
+            >
+              + Add text block
+            </button>
+            <button
+              type="button"
+              onClick={addImageBlock}
+              className="text-sm border rounded-lg px-3 py-2"
+            >
+              + Add image block
+            </button>
+          </div>
 
         {/* disabled={saving} stops double-clicks while a save is in progress */}
         <button
