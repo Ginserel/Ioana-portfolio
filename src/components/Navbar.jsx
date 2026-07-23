@@ -21,8 +21,9 @@ function Navbar() {
 
   return (
     <nav className="flex items-center justify-between px-6 md:px-10 py-5">
-      <Link to="/" className="font-display text-lg tracking-tight">
-        Ioana Dobrin
+      <Link to="/" className="flex items-center gap-2">
+        <img src="/logo.svg" alt="" className="h-7 w-7" />
+        <span className="font-display text-lg tracking-tight">Ioana Dobrin</span>
       </Link>
       <div className="flex gap-5 md:gap-8 text-sm items-center text-neutral-600">
         <Link to="/gallery" className="hover:text-neutral-900 transition-colors">Gallery</Link>

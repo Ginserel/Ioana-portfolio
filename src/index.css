@@ -1,7 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500&display=swap');
 @import "tailwindcss";
 
-/* Register our fonts as Tailwind utilities: font-display and font-body */
 @theme {
   --font-display: "Fraunces", serif;
   --font-body: "Inter", sans-serif;
@@ -9,4 +8,27 @@
 
 body {
   @apply font-body bg-[#FAF8F5] text-neutral-900 antialiased;
+}
+
+button:not(:disabled),
+[role="button"],
+label,
+input[type="file"],
+input[type="file"]::file-selector-button {
+  cursor: pointer;
+}
+
+input[type="file"]::file-selector-button {
+  border: 1px solid #d4d4d4;
+  border-radius: 0.5rem;
+  padding: 0.4rem 0.9rem;
+  margin-right: 0.75rem;
+  background: white;
+  font: inherit;
+  font-size: 0.875rem;
+  transition: background-color 0.15s;
+}
+
+input[type="file"]::file-selector-button:hover {
+  background: #f5f5f5;
 }
