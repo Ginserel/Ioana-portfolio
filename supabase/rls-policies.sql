@@ -188,20 +188,23 @@ create policy "Signed-in users can delete project images"
 -- above with nothing permissive left over.
 -- ===========================================================================
 
--- Then test from outside, as a stranger would, in a terminal:
+-- Then test from outside, as a stranger would. ./supabase/check-rls.sh does
+-- this for you; by hand it is:
 --
---   curl -s -o /dev/null -w "%{http_code}\n" \
---     -H "apikey: <your publishable key>" \
+--   curl -s -H "apikey: <your publishable key>" \
 --     "<your project url>/rest/v1/messages?select=id&limit=1"
 --
--- 401 or 403 is correct. 200 means the messages are still readable by anyone
--- and something above has not applied.
+-- Read the BODY, not just the status. Row level security doesn't reject the
+-- request, it filters the rows away, so a protected table answers 200 with
+-- an empty array:
 --
---   curl -s -o /dev/null -w "%{http_code}\n" \
---     -H "apikey: <your publishable key>" \
---     "<your project url>/rest/v1/projects?select=id&limit=1"
+--   []            correct - nothing visible to a stranger
+--   [{"id":...}]  a leak - the messages are readable by anyone
+--   401/403       also fine, the table grant itself refuses strangers
 --
--- 200 is correct here - the portfolio is meant to be public.
+-- An empty array only proves something if the table actually has rows in it.
+-- The same request against projects should come back WITH rows: the
+-- portfolio is meant to be public.
 --
 -- After running this, sign into /admin and add, reorder and delete a test
 -- project to confirm you haven't locked yourself out of your own site.
