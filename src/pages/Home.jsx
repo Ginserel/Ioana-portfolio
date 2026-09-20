@@ -75,6 +75,7 @@ function Home() {
               project={lead}
               height="h-[420px] sm:h-[520px] md:h-[640px]"
               titleSize="text-2xl md:text-4xl"
+              eager
             />
           </div>
         </section>

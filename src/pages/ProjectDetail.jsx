@@ -79,6 +79,7 @@ function ProjectDetail() {
           src={project.cover_image_url}
           alt={project.title}
           height="h-[420px] sm:h-[520px] md:h-[640px]"
+          eager
         />
 
         {/* Render each block in order. project.blocks is the array from the database.

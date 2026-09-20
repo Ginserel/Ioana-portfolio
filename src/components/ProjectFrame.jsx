@@ -4,7 +4,9 @@ import { categoryLabel } from '../lib/categories'
 // Every image on the site goes through here, so the rule only lives in one
 // place: artwork sits on a padded panel and object-contain scales it to fit.
 // Nothing is ever cropped, whatever shape it happens to be.
-export function FramedImage({ src, alt, height = 'h-[380px]', hover = false }) {
+// eager = this image is above the fold (the home page's lead frame, a project's
+// cover), so it should load straight away instead of waiting to be scrolled to.
+export function FramedImage({ src, alt, height = 'h-[380px]', hover = false, eager = false }) {
   return (
     <div
       className={`${height} bg-panel flex items-center justify-center overflow-hidden p-6 md:p-10`}
@@ -13,6 +15,8 @@ export function FramedImage({ src, alt, height = 'h-[380px]', hover = false }) {
         <img
           src={src}
           alt={alt}
+          loading={eager ? 'eager' : 'lazy'}
+          decoding="async"
           className={`h-full w-full object-contain${
             hover ? ' transition-transform duration-700 ease-out group-hover:scale-[1.03]' : ''
           }`}
@@ -29,10 +33,16 @@ export function FramedImage({ src, alt, height = 'h-[380px]', hover = false }) {
 
 // A framed cover image plus its caption, linking through to the project.
 // Used by the home page and the gallery so both stay in step.
-function ProjectFrame({ project, height, titleSize = 'text-xl md:text-2xl' }) {
+function ProjectFrame({ project, height, titleSize = 'text-xl md:text-2xl', eager = false }) {
   return (
     <Link to={`/project/${project.id}`} className="group block">
-      <FramedImage src={project.cover_image_url} alt={project.title} height={height} hover />
+      <FramedImage
+        src={project.cover_image_url}
+        alt={project.title}
+        height={height}
+        eager={eager}
+        hover
+      />
 
       {/* Caption: title on the left, category on the right */}
       <div className="mt-4 flex items-baseline justify-between gap-4">

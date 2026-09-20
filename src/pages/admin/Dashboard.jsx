@@ -42,6 +42,9 @@ function Dashboard() {
   // Fetch once we know we're logged in
   useEffect(() => {
     if (!session) return
+    // loadData only reaches setState after its awaits resolve, which the rule
+    // can't see - it flags every call as if the state change were synchronous
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadData().catch(console.error)
   }, [session])
 
@@ -208,6 +211,7 @@ function Dashboard() {
               <img
                 src={project.cover_image_url}
                 alt={project.title}
+                loading="lazy"
                 className="w-14 h-10 object-cover rounded"
               />
               <div>
@@ -254,7 +258,7 @@ function Dashboard() {
                 </p>
               </div>
               <div className="flex gap-3 text-sm">
-                {/* mailto: opens the default email app with the address pre-filled */}
+                {/* Opens a Gmail compose window with the address pre-filled */}
                 <a
                   href={`https://mail.google.com/mail/?view=cm&to=${msg.email}&su=Re: your message`}
                   target="_blank"

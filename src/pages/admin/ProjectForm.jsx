@@ -5,6 +5,35 @@ import { useNavigate, useParams } from 'react-router-dom'
 // Our Supabase connection (the "waiter" that talks to the database)
 import { supabase } from '../../lib/supabaseClient'
 
+// A storage key ends up inside a public URL, so anything that would break one
+// has to go: spaces, #, ?, brackets, accents. "study #3 (final).JPG" becomes
+// "1699999999999-study-3-final.jpg". The timestamp keeps names unique.
+function safeFileName(name) {
+  const dot = name.lastIndexOf('.')
+  const base = dot > 0 ? name.slice(0, dot) : name
+  const extension = dot > 0 ? name.slice(dot + 1) : ''
+  const clean = (part) =>
+    part
+      .normalize('NFKD')
+      .replace(/[\u0300-\u036f]/g, '') // drop accents: "ÉTÉ" -> "ETE", not "E-TE"
+      .replace(/[^a-zA-Z0-9]+/g, '-')
+      .replace(/^-|-$/g, '')
+      .toLowerCase()
+
+  const safeBase = clean(base) || 'upload'
+  const safeExtension = clean(extension)
+  return `${Date.now()}-${safeBase}${safeExtension ? '.' + safeExtension : ''}`
+}
+
+// Blocks get a key that belongs to the block itself, not to its position, so
+// React keeps each editor card with its own block when they're reordered.
+// It lives in state only - stripped back out before saving.
+let blockKeyCounter = 0
+function nextBlockKey() {
+  blockKeyCounter += 1
+  return `block-${blockKeyCounter}`
+}
+
 function ProjectForm() {
   // If the URL is /admin/edit/5, then id = "5". If URL is /admin/new, id = undefined
   const { id } = useParams()
@@ -69,7 +98,7 @@ function ProjectForm() {
       setClient(data.client || '')
       setFeatured(data.featured || false)
       setExistingCoverUrl(data.cover_image_url || '')
-      setBlocks(data.blocks || [])
+      setBlocks((data.blocks || []).map((block) => ({ ...block, _key: nextBlockKey() })))
     }
 
     fetchProject()
@@ -80,12 +109,12 @@ function ProjectForm() {
     // We create a BRAND NEW array: spread the old blocks, add the new one.
     // Never modify the existing array directly - React needs a new array
     // to notice the change and re-render.
-    setBlocks([...blocks, { type: 'text', heading: '', body: '' }])
+    setBlocks([...blocks, { _key: nextBlockKey(), type: 'text', heading: '', body: '' }])
   }
 
   // Add a new empty image block to the end
   function addImageBlock() {
-    setBlocks([...blocks, { type: 'image', url: '', caption: '' }])
+    setBlocks([...blocks, { _key: nextBlockKey(), type: 'image', url: '', caption: '' }])
   }
 
   // Upload a file for one specific block, then store its URL in that block
@@ -95,7 +124,7 @@ function ProjectForm() {
     setUploadingIndex(index) // show "Uploading..." on this block
 
     // Same unique-filename trick as the cover image
-    const fileName = `${Date.now()}-${file.name}`
+    const fileName = safeFileName(file.name)
 
     const { error: uploadError } = await supabase.storage
       .from('project-images')
@@ -167,10 +196,9 @@ function ProjectForm() {
 
     // ONLY if the user picked a new file, upload it
     if (coverFile) {
-      // Date.now() = current timestamp in milliseconds.
-      // Prepending it makes the filename unique, so two files
+      // Timestamped and stripped of anything URL-unsafe, so two files
       // called "painting.jpg" can never overwrite each other
-      const fileName = `${Date.now()}-${coverFile.name}`
+      const fileName = safeFileName(coverFile.name)
 
       // Upload the file to our storage bucket
       const { error: uploadError } = await supabase.storage
@@ -195,6 +223,13 @@ function ProjectForm() {
 
     // Build the object we'll send to the database.
     // Keys here match the column names in the projects table
+    // _key is ours, for React - it never goes to the database
+    const blocksToSave = blocks.map((block) => {
+      const copy = { ...block }
+      delete copy._key
+      return copy
+    })
+
     const projectData = {
       title,
       description,
@@ -203,9 +238,8 @@ function ProjectForm() {
       client: client || null,             // empty string becomes NULL
       featured,
       cover_image_url: coverUrl,
-          blocks,
+      blocks: blocksToSave,
     }
-    
 
     let error
 
@@ -216,8 +250,23 @@ function ProjectForm() {
         .update(projectData)
         .eq('id', id))
     } else {
+      // A new project goes to the end of the running order. Without this every
+      // new row shares the same order_index and the site's ordering is a
+      // coin toss - and the dashboard's up/down buttons have nothing to swap.
+      const { data: last } = await supabase
+        .from('projects')
+        .select('order_index')
+        .order('order_index', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+
+      const nextIndex =
+        typeof last?.order_index === 'number' ? last.order_index + 1 : 0
+
       // INSERT a brand new row
-      ;({ error } = await supabase.from('projects').insert(projectData))
+      ;({ error } = await supabase
+        .from('projects')
+        .insert({ ...projectData, order_index: nextIndex }))
     }
 
     setSaving(false)
@@ -318,7 +367,7 @@ function ProjectForm() {
 
           {/* Render an editable card for each block in state */}
           {blocks.map((block, index) => (
-            <div key={index} className="border rounded-lg p-3 mb-3 bg-neutral-50">
+            <div key={block._key} className="border rounded-lg p-3 mb-3 bg-neutral-50">
               {block.type === 'text' && (
                 <div className="flex flex-col gap-2">
                   <input

@@ -9,6 +9,7 @@ import Login from './pages/admin/Login'
 import Dashboard from './pages/admin/Dashboard'
 import ProjectForm from './pages/admin/ProjectForm'
 import ProjectDetail from './pages/ProjectDetail'
+import NotFound from './pages/NotFound'
 
 
 function App() {
@@ -31,6 +32,8 @@ function App() {
           <Route path="/admin/new" element={<ProjectForm />} />
           <Route path="/admin/edit/:id" element={<ProjectForm />} />
           <Route path="/project/:id" element={<ProjectDetail />} />
+          {/* Catch-all - anything else gets the 404 page */}
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </main>
       {!isAdmin && <Footer />}
