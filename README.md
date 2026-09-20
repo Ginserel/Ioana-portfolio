@@ -59,9 +59,10 @@ the ones flagged `featured` — the lowest `order_index` gets the large frame.
 > the publishable key out of the JavaScript bundle and call the API directly,
 > so what actually protects the data is Supabase Row Level Security.
 >
-> `supabase/rls-policies.sql` holds the policies this site needs, with queries
-> to inspect what's currently in place and a check to run from outside. Worth
-> re-reading after any schema change.
+> `supabase/rls-policies.sql` holds the policies this site needs, with a query
+> to inspect what's currently in place. `./supabase/check-rls.sh` then asks the
+> API what a stranger can actually reach — messages must come back 401/403 and
+> projects 200. Worth running after any change to policies.
 
 Replacing a project's cover image deletes the file it replaced, once the save
 has gone through. Images inside content blocks are left in the bucket on
