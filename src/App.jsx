@@ -17,21 +17,24 @@ function App() {
   const isAdmin = pathname.startsWith('/admin') || pathname === '/caledeacces1988'
 
   return (
-    <>
+    // min-h-screen + flex-1 keeps the footer at the bottom on short pages
+    <div className="min-h-screen flex flex-col">
       <Navbar />
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/gallery" element={<Gallery />} />
-        <Route path="/about" element={<About />} />
-        <Route path="/contact" element={<Contact />} />
-        <Route path="/caledeacces1988" element={<Login />} />
-        <Route path="/admin" element={<Dashboard />} />
-        <Route path="/admin/new" element={<ProjectForm />} />
-        <Route path="/admin/edit/:id" element={<ProjectForm />} />
-        <Route path="/project/:id" element={<ProjectDetail />} />
-      </Routes>
+      <main className="flex-1">
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/gallery" element={<Gallery />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/contact" element={<Contact />} />
+          <Route path="/caledeacces1988" element={<Login />} />
+          <Route path="/admin" element={<Dashboard />} />
+          <Route path="/admin/new" element={<ProjectForm />} />
+          <Route path="/admin/edit/:id" element={<ProjectForm />} />
+          <Route path="/project/:id" element={<ProjectDetail />} />
+        </Routes>
+      </main>
       {!isAdmin && <Footer />}
-    </>
+    </div>
   )
 }
 
