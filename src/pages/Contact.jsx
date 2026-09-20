@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
 
 // Every field shares the same look: a small uppercase label above a line,
@@ -11,6 +11,16 @@ function Contact() {
   const [email, setEmail] = useState('')
   const [message, setMessage] = useState('')
   const [status, setStatus] = useState('')
+  // Two cheap spam checks, no third-party service and nothing for a real
+  // visitor to do: a field that only a bot would fill in, and the time the
+  // page was opened. Bots submit instantly; people take longer than a second.
+  const [botField, setBotField] = useState('')
+  const openedAt = useRef(null)
+
+  // Recorded after mount rather than during render, which has to stay pure
+  useEffect(() => {
+    openedAt.current = Date.now()
+  }, [])
 
   async function handleSubmit(event) {
     // It's a real form now, so stop the browser reloading the page
@@ -18,6 +28,16 @@ function Contact() {
 
     if (!name || !email || !message) {
       setStatus('Please fill in all fields.')
+      return
+    }
+
+    // Look like it worked rather than tell a bot which check caught it
+    const tooFast = openedAt.current !== null && Date.now() - openedAt.current < 1500
+    if (botField || tooFast) {
+      setStatus('Message sent! I will get back to you soon.')
+      setName('')
+      setEmail('')
+      setMessage('')
       return
     }
 
@@ -78,6 +98,20 @@ function Contact() {
                 className={fieldClass}
               />
             </label>
+
+            {/* Hidden from people and from screen readers, so anything that
+                fills it in is automated. Off-screen rather than display:none,
+                which some bots know to skip. */}
+            <input
+              type="text"
+              name="website"
+              tabIndex={-1}
+              autoComplete="off"
+              aria-hidden="true"
+              value={botField}
+              onChange={(e) => setBotField(e.target.value)}
+              className="absolute left-[-9999px] h-0 w-0 opacity-0"
+            />
 
             <label className="flex flex-col gap-2">
               <span className="text-[0.7rem] uppercase tracking-[0.25em] text-neutral-500">
