@@ -26,13 +26,13 @@ function Navbar() {
         <span className="font-display text-lg tracking-tight">Ioana Dobrin</span>
       </Link>
       <div className="flex gap-5 md:gap-8 text-sm items-center text-neutral-600">
-        <Link to="/gallery" className="hover:text-neutral-900 transition-colors">Gallery</Link>
-        <Link to="/about" className="hover:text-neutral-900 transition-colors">About</Link>
-        <Link to="/contact" className="hover:text-neutral-900 transition-colors">Contact</Link>
+        <Link to="/gallery" className="hover:text-accent transition-colors">Gallery</Link>
+        <Link to="/about" className="hover:text-accent transition-colors">About</Link>
+        <Link to="/contact" className="hover:text-accent transition-colors">Contact</Link>
         {session && (
           <Link
             to="/admin"
-            className="bg-neutral-900 text-white px-3 py-1.5 rounded-full text-xs"
+            className="bg-accent text-white px-3 py-1.5 rounded-full text-xs"
           >
             Admin
           </Link>

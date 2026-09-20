@@ -1,16 +1,77 @@
-# React + Vite
+# Ioana Dobrin — portfolio
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Portfolio site for a graphic designer and fine artist: fashion licensing,
+graphic design, illustration and fine art. React + Vite on the front, Supabase
+for the database, file storage and admin login. Deployed on Vercel.
 
-Currently, two official plugins are available:
+## Running it locally
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+```bash
+npm install
+cp .env.example .env   # then fill in the two values
+npm run dev
+```
 
-## React Compiler
+The values come from your Supabase project under Project settings → API. Both
+are safe in the browser: the publishable key can only do what your Row Level
+Security policies allow. A secret key (`sb_secret_…`) bypasses every policy and
+must never go in this file.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+| Command | What it does |
+| --- | --- |
+| `npm run dev` | Local dev server with hot reload |
+| `npm run lint` | ESLint over the whole project |
+| `npm run build` | Production build into `dist/` |
+| `npm run preview` | Serve the built output |
 
-## Expanding the ESLint configuration
+Lint and build also run on every pull request (`.github/workflows/ci.yml`).
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## How it's laid out
+
+```
+src/
+  components/   Navbar, Footer, ProjectFrame (the shared image frame)
+  lib/          supabaseClient.js, categories.js
+  pages/        Home, Gallery, ProjectDetail, About, Contact, NotFound
+  pages/admin/  Login, Dashboard, ProjectForm
+```
+
+Two ideas worth knowing before changing anything:
+
+**Artwork is never cropped.** Every image goes through `FramedImage`, which
+centres it with `object-contain` on a padded panel. Pieces are all shapes, and
+a crop would cut the work. The rule lives in that one component on purpose.
+
+**Categories are defined once**, in `src/lib/categories.js`. The keys are what
+the database stores, the values are what visitors read. Adding a category
+means editing that file and the dropdown in `pages/admin/ProjectForm.jsx`.
+
+## The admin side
+
+`/caledeacces1988` is the login; `/admin` is the dashboard, where projects are
+added, edited, reordered (the up/down arrows swap `order_index`) and deleted,
+and where messages from the contact form arrive.
+
+The site orders projects by `order_index` ascending, and the home page shows
+the ones flagged `featured` — the lowest `order_index` gets the large frame.
+
+> The login redirect is a convenience, not a security control. Anyone can read
+> the publishable key out of the JavaScript bundle and call the API directly,
+> so what actually protects the data is Supabase Row Level Security.
+>
+> `supabase/rls-policies.sql` holds the policies this site needs, with a query
+> to inspect what's currently in place. `./supabase/check-rls.sh` then asks the
+> API what a stranger can actually reach — messages must come back 401/403 and
+> projects 200. Worth running after any change to policies.
+
+Replacing a project's cover image deletes the file it replaced, once the save
+has gone through. Images inside content blocks are left in the bucket on
+purpose: those upload before the save, so cleaning them up could take the live
+project's image with it if the form were abandoned halfway.
+
+## Deployment
+
+Vercel builds from `main`. `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` are
+set in the project's environment variables, per environment — variables in the
+environment take precedence over any `.env` file. `vercel.json` rewrites all
+paths to `index.html` so client-side routes survive a refresh.

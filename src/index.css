@@ -1,13 +1,18 @@
-@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=Work+Sans:wght@300;400;500&display=swap');
 @import "tailwindcss";
 
 @theme {
-  --font-display: "Fraunces", serif;
-  --font-body: "Inter", sans-serif;
+  --font-display: "Cormorant Garamond", serif;
+  --font-body: "Work Sans", sans-serif;
+
+  /* Warm palette shared by the gallery and the home page */
+  --color-paper: #f6f2ea;  /* page background */
+  --color-panel: #ece2d2;  /* image frames */
+  --color-accent: #8a4b2e; /* links and highlighted words */
 }
 
 body {
-  @apply font-body bg-[#FAF8F5] text-neutral-900 antialiased;
+  @apply font-body bg-paper text-neutral-900 antialiased;
 }
 
 button:not(:disabled),
