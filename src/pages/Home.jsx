@@ -1,43 +1,8 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
-import { CATEGORY_LABELS, categoryLabel } from '../lib/categories'
-
-// One framed image plus its caption - used for the big lead project and for
-// every tile in the grid below it. The artwork is never cropped: it sits on a
-// padded panel and object-contain scales it to fit whatever shape it is.
-function ProjectFrame({ project, frameHeight, titleSize = 'text-xl md:text-2xl' }) {
-  return (
-    <Link to={`/project/${project.id}`} className="group block">
-      <div
-        className={`${frameHeight} bg-panel flex items-center justify-center overflow-hidden p-6 md:p-10`}
-      >
-        {project.cover_image_url ? (
-          <img
-            src={project.cover_image_url}
-            alt={project.title}
-            className="h-full w-full object-contain transition-transform duration-700 ease-out group-hover:scale-[1.03]"
-          />
-        ) : (
-          // No cover uploaded yet - keep the frame, skip the broken image icon
-          <span className="text-[0.7rem] uppercase tracking-[0.25em] text-neutral-400">
-            No image yet
-          </span>
-        )}
-      </div>
-
-      {/* Caption: title on the left, category on the right */}
-      <div className="mt-4 flex items-baseline justify-between gap-4">
-        <h3 className={`font-display ${titleSize} group-hover:text-accent transition-colors`}>
-          {project.title}
-        </h3>
-        <span className="shrink-0 text-[0.7rem] uppercase tracking-[0.2em] text-neutral-500">
-          {categoryLabel(project.category)}
-        </span>
-      </div>
-    </Link>
-  )
-}
+import { CATEGORY_LABELS } from '../lib/categories'
+import ProjectFrame from '../components/ProjectFrame'
 
 function Home() {
   const [featured, setFeatured] = useState([])
@@ -108,7 +73,7 @@ function Home() {
           <div className="mx-auto max-w-[1400px]">
             <ProjectFrame
               project={lead}
-              frameHeight="h-[420px] sm:h-[520px] md:h-[640px]"
+              height="h-[420px] sm:h-[520px] md:h-[640px]"
               titleSize="text-2xl md:text-4xl"
             />
           </div>
@@ -119,7 +84,7 @@ function Home() {
       <section className="px-6 md:px-10 pb-20 md:pb-28">
         <div className="mx-auto max-w-[1400px] grid gap-8 md:gap-10 sm:grid-cols-2 lg:grid-cols-3">
           {rest.map((project) => (
-            <ProjectFrame key={project.id} project={project} frameHeight="h-[380px]" />
+            <ProjectFrame key={project.id} project={project} height="h-[380px]" />
           ))}
 
           {/* Closing tile - same frame shape, sends visitors to the full gallery */}
@@ -185,32 +150,6 @@ function Home() {
           </ul>
         </div>
       </section>
-
-      {/* FOOTER */}
-      <footer className="border-t border-neutral-900/10 px-6 md:px-10 py-10 md:py-14">
-        <div className="mx-auto max-w-[1400px] flex flex-col gap-8 md:flex-row md:items-end md:justify-between">
-          <div>
-            <p className="font-display text-2xl md:text-3xl">Ioana Dobrin</p>
-            <p className="mt-1 text-sm text-neutral-500">
-              Graphic designer &amp; fine artist
-            </p>
-          </div>
-          <div className="flex flex-wrap gap-6 text-sm text-neutral-600">
-            <Link to="/gallery" className="transition-colors hover:text-accent">
-              Gallery
-            </Link>
-            <Link to="/about" className="transition-colors hover:text-accent">
-              About
-            </Link>
-            <Link to="/contact" className="transition-colors hover:text-accent">
-              Contact
-            </Link>
-          </div>
-          <p className="text-[0.7rem] uppercase tracking-[0.25em] text-neutral-400">
-            © {new Date().getFullYear()}
-          </p>
-        </div>
-      </footer>
     </div>
   )
 }

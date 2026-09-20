@@ -1,5 +1,6 @@
-import { Routes, Route } from 'react-router-dom'
+import { Routes, Route, useLocation } from 'react-router-dom'
 import Navbar from './components/Navbar'
+import Footer from './components/Footer'
 import Home from './pages/Home'
 import Gallery from './pages/Gallery'
 import About from './pages/About'
@@ -11,6 +12,10 @@ import ProjectDetail from './pages/ProjectDetail'
 
 
 function App() {
+  // The admin screens are tools, not part of the public site - no footer there
+  const { pathname } = useLocation()
+  const isAdmin = pathname.startsWith('/admin') || pathname === '/caledeacces1988'
+
   return (
     <>
       <Navbar />
@@ -25,6 +30,7 @@ function App() {
         <Route path="/admin/edit/:id" element={<ProjectForm />} />
         <Route path="/project/:id" element={<ProjectDetail />} />
       </Routes>
+      {!isAdmin && <Footer />}
     </>
   )
 }
