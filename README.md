@@ -57,9 +57,16 @@ the ones flagged `featured` — the lowest `order_index` gets the large frame.
 
 > The login redirect is a convenience, not a security control. Anyone can read
 > the publishable key out of the JavaScript bundle and call the API directly,
-> so what actually protects the data is Supabase Row Level Security. Writes to
-> `projects` should require an authenticated user, and `messages` should allow
-> insert but not select. Worth re-checking after any schema change.
+> so what actually protects the data is Supabase Row Level Security.
+>
+> `supabase/rls-policies.sql` holds the policies this site needs, with queries
+> to inspect what's currently in place and a check to run from outside. Worth
+> re-reading after any schema change.
+
+Replacing a project's cover image deletes the file it replaced, once the save
+has gone through. Images inside content blocks are left in the bucket on
+purpose: those upload before the save, so cleaning them up could take the live
+project's image with it if the form were abandoned halfway.
 
 ## Deployment
 

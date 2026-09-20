@@ -34,6 +34,19 @@ function nextBlockKey() {
   return `block-${blockKeyCounter}`
 }
 
+// Delete a file from the bucket, given the public URL stored in the database.
+// Best effort on purpose: the project has already been saved by the time this
+// runs, so a failure here leaves a stray file, not a broken project.
+async function removeStoredImage(publicUrl) {
+  const marker = '/project-images/'
+  const at = publicUrl.indexOf(marker)
+  if (at === -1) return // not one of ours - leave it alone
+
+  const path = decodeURIComponent(publicUrl.slice(at + marker.length).split('?')[0])
+  const { error } = await supabase.storage.from('project-images').remove([path])
+  if (error) console.error('Could not remove the replaced image:', error)
+}
+
 function ProjectForm() {
   // If the URL is /admin/edit/5, then id = "5". If URL is /admin/new, id = undefined
   const { id } = useParams()
@@ -275,6 +288,16 @@ function ProjectForm() {
       console.error(error)
       setStatus('Save failed. Check the console.')
     } else {
+      // The row now points at the new file, so the one it replaced is
+      // unreferenced and can go. Only ever on replacement, and only after the
+      // save succeeded - deleting earlier could orphan a project that still
+      // points at it. Images inside content blocks are deliberately left
+      // alone: those uploads happen before the save, so a form abandoned
+      // halfway would take the live project's image with it.
+      if (isEditing && coverFile && existingCoverUrl && existingCoverUrl !== coverUrl) {
+        await removeStoredImage(existingCoverUrl)
+      }
+
       // Success - go back to the dashboard
       navigate('/admin')
     }
