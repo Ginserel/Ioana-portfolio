@@ -89,7 +89,7 @@ function Navbar() {
           />
           <div
             id="site-menu"
-            className="md:hidden absolute right-6 top-full z-20 border border-neutral-900/10 bg-paper py-1 shadow-sm"
+            className="md:hidden absolute right-4 top-full -mt-4 z-20 border border-neutral-900/10 bg-paper py-1 shadow-sm"
           >
             {LINKS.map((link) => (
               <Link
