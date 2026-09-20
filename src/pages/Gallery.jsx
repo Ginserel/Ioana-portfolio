@@ -54,13 +54,15 @@ function Gallery() {
           Selected <em className="italic text-accent">work.</em>
         </h1>
 
-        {/* Filter bar - one row of labels, the active one carries the accent */}
-        <div className="flex flex-wrap gap-x-8 gap-y-3 border-y border-neutral-900/10 py-4 mb-10 md:mb-14">
+        {/* Filter bar - the active label carries the accent. Two even columns
+            on a phone, because letting five labels of different lengths wrap
+            freely leaves a ragged three-line block. One row once there's room. */}
+        <div className="grid grid-cols-2 gap-x-6 gap-y-3.5 border-y border-neutral-900/10 py-4 mb-10 sm:flex sm:flex-wrap sm:gap-x-8 md:mb-14">
           {filters.map(([value, label]) => (
             <button
               key={value}
               onClick={() => setActiveCategory(value)}
-              className={`text-[0.7rem] uppercase tracking-[0.2em] transition-colors ${
+              className={`text-left text-[0.7rem] uppercase tracking-[0.2em] transition-colors ${
                 activeCategory === value
                   ? 'text-accent'
                   : 'text-neutral-500 hover:text-neutral-900'
