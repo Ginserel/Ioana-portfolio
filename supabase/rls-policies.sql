@@ -64,6 +64,33 @@ order by 1, 2;
 -- visible messages to zero while the contact form kept working.)
 
 
+-- ---------------------------------------------------------------------------
+-- IF THE DATABASE IS ALREADY SET UP CORRECTLY, STOP HERE.
+--
+-- As of September 2026 it was, under Supabase's own default policy names.
+-- Step 1 returned, in effect:
+--
+--   messages  INSERT for {anon,authenticated}   <- the contact form
+--   messages  SELECT for {authenticated}        <- private, the important one
+--   messages  DELETE for {authenticated}
+--   projects  SELECT for {public}               <- "public" is the catch-all
+--                                                  role, so everyone. Correct
+--                                                  for a portfolio.
+--   projects  INSERT / UPDATE / DELETE for {authenticated}
+--   storage   INSERT / DELETE / SELECT for {authenticated}
+--   rls enabled: true on both tables
+--
+-- That is equivalent to step 2. Running it anyway would add a second set of
+-- policies saying the same thing under different names - harmless, but it
+-- makes the next audit harder to read. Step 2 is for a database that is
+-- missing policies or has permissive ones, not for this shape.
+--
+-- One that looks wrong and isn't: storage SELECT limited to {authenticated}.
+-- The bucket is public, and a public bucket serves files through a URL that
+-- doesn't consult object policies, so visitors still see the images.
+-- ---------------------------------------------------------------------------
+
+
 -- ===========================================================================
 -- STEP 2 - the policies this site needs.
 -- ===========================================================================
