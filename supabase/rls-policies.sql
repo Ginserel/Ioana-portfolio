@@ -13,27 +13,55 @@
 -- STEP 1 - look at what exists today. Run this on its own, first.
 -- ===========================================================================
 
--- Is RLS switched on at all? rowsecurity must be true for both tables.
--- If it is false, every policy below is ignored and the table is wide open.
-select tablename, rowsecurity
+-- One query, one result set. The SQL editor only displays the LAST
+-- statement's output, so asking three separate questions would hide the two
+-- that matter. Run this whole block and read every row.
+
+select 'rls enabled'::text as what,
+       tablename::text     as subject,
+       rowsecurity::text   as value
 from pg_tables
 where schemaname = 'public'
-  and tablename in ('projects', 'messages');
+  and tablename in ('projects', 'messages')
 
--- Which policies are already in place, and who they apply to?
-select schemaname, tablename, policyname, roles, cmd, qual, with_check
+union all
+
+select 'policy'::text,
+       schemaname::text || '.' || tablename::text || ' -> ' || policyname::text,
+       cmd::text || ' for ' || roles::text
 from pg_policies
 where schemaname in ('public', 'storage')
-order by schemaname, tablename, policyname;
 
--- Is the image bucket public? It needs to be, for getPublicUrl to work.
-select id, name, public from storage.buckets where id = 'project-images';
+union all
+
+select 'bucket public'::text, id::text, public::text
+from storage.buckets
+where id = 'project-images'
+
+order by 1, 2;
+
+-- What you want to see:
+--   rls enabled    projects / messages     true   (false = wide open)
+--   policy         one row per policy, with the command and the roles
+--   bucket public  project-images          true
 
 -- READ THE OUTPUT BEFORE CONTINUING.
--- Step 2 replaces policies by name. Any existing policy under a DIFFERENT
--- name stays, and a permissive leftover (for example one allowing anon to
--- select from messages) would still apply. Drop those yourself:
---   drop policy "<the name from above>" on public.<table>;
+--
+-- Postgres combines policies with OR, not AND. One permissive leftover is
+-- enough to undo everything below: if any policy lets anon select from
+-- messages, the messages are public no matter what else is in place.
+--
+-- Step 2 replaces policies BY NAME, so anything under a different name
+-- survives it. The usual culprit is Supabase's own starter policy,
+-- "Enable read access for all users", which grants select to anon. If the
+-- step 1 output shows that on messages, or anything else granting anon more
+-- than "select on projects" and "insert on messages", drop it by hand:
+--
+--   drop policy "<the exact name from step 1>" on public.messages;
+--
+-- (Verified on a local Postgres 16: with that starter policy left in place,
+-- anon still read every message after step 2 ran. Dropping it took anon's
+-- visible messages to zero while the contact form kept working.)
 
 
 -- ===========================================================================
