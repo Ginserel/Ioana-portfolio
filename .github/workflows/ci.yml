@@ -1,0 +1,41 @@
+name: CI
+
+# One run per pull request, plus one for anything that lands on main.
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# A new push to the same branch cancels the run that's already going
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Lint and build
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      # ci (not install) installs exactly what package-lock.json pins
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      # Placeholders only. This step checks the app compiles; it never talks
+      # to Supabase, so no real credentials belong here. The live values are
+      # set in Vercel, per environment.
+      - name: Build
+        run: npm run build
+        env:
+          VITE_SUPABASE_URL: https://example.supabase.co
+          VITE_SUPABASE_ANON_KEY: placeholder-key-for-ci
