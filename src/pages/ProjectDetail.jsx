@@ -82,6 +82,15 @@ function ProjectDetail() {
           eager
         />
 
+        {/* The description, written in the admin form, reads as the opening
+            paragraph. Kept to a narrow measure like the text blocks below,
+            and pre-line so the line breaks typed into the form survive. */}
+        {project.description && (
+          <p className="mt-10 md:mt-14 max-w-2xl whitespace-pre-line text-lg leading-relaxed text-neutral-600">
+            {project.description}
+          </p>
+        )}
+
         {/* Render each block in order. project.blocks is the array from the database.
             The || [] guards against it being null on older projects. */}
         <div className="mt-12 md:mt-16 flex flex-col gap-12 md:gap-16">
