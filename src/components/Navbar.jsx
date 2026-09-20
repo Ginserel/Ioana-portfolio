@@ -89,14 +89,14 @@ function Navbar() {
           />
           <div
             id="site-menu"
-            className="md:hidden absolute right-6 top-full z-20 min-w-44 border border-neutral-900/10 bg-paper py-2 shadow-sm"
+            className="md:hidden absolute right-6 top-full z-20 border border-neutral-900/10 bg-paper py-1 shadow-sm"
           >
             {LINKS.map((link) => (
               <Link
                 key={link.to}
                 to={link.to}
                 onClick={() => setMenuOpen(false)}
-                className="block px-5 py-3 text-sm text-neutral-600 transition-colors hover:text-accent"
+                className="block whitespace-nowrap px-4 py-2.5 text-sm text-neutral-600 transition-colors hover:text-accent"
               >
                 {link.label}
               </Link>
@@ -105,7 +105,7 @@ function Navbar() {
               <Link
                 to="/admin"
                 onClick={() => setMenuOpen(false)}
-                className="mt-1 block border-t border-neutral-900/10 px-5 py-3 text-sm text-accent"
+                className="mt-1 block whitespace-nowrap border-t border-neutral-900/10 px-4 py-2.5 text-sm text-accent"
               >
                 Admin
               </Link>
