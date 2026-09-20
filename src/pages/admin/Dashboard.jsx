@@ -8,6 +8,8 @@ function Dashboard() {
   const [loading, setLoading] = useState(true)
   const [projects, setProjects] = useState([])
   const [messages, setMessages] = useState([])
+  // True while a reorder is being saved - stops double clicks racing each other
+  const [reordering, setReordering] = useState(false)
   const navigate = useNavigate()
 
   // Security gate - check who's logged in, runs once on page load
@@ -42,6 +44,58 @@ function Dashboard() {
     if (!session) return
     loadData().catch(console.error)
   }, [session])
+
+  // Move a project one step up or down the list.
+  // index = where it sits now, direction = -1 for up, +1 for down.
+  async function moveProject(index, direction) {
+    const targetIndex = index + direction
+    // Already first or last - there's nothing to swap with
+    if (targetIndex < 0 || targetIndex >= projects.length) return
+
+    const current = projects[index]
+    const neighbour = projects[targetIndex]
+
+    // Show the new order immediately, then save it in the background
+    const reordered = [...projects]
+    reordered[index] = neighbour
+    reordered[targetIndex] = current
+    setProjects(reordered)
+    setReordering(true)
+
+    // Normally the two rows just trade order_index values. If those values are
+    // missing or identical (rows that were never ordered all sit at 0) swapping
+    // them would change nothing, so renumber the whole list instead.
+    const canSwap =
+      typeof current.order_index === 'number' &&
+      typeof neighbour.order_index === 'number' &&
+      current.order_index !== neighbour.order_index
+
+    const updates = canSwap
+      ? [
+          { id: current.id, order_index: neighbour.order_index },
+          { id: neighbour.id, order_index: current.order_index },
+        ]
+      : reordered.map((project, i) => ({ id: project.id, order_index: i }))
+
+    const results = await Promise.all(
+      updates.map((update) =>
+        supabase
+          .from('projects')
+          .update({ order_index: update.order_index })
+          .eq('id', update.id)
+      )
+    )
+
+    const failed = results.find((result) => result.error)
+    if (failed) {
+      console.error(failed.error)
+      alert('Could not save the new order. Check the console.')
+    }
+
+    // Re-read from the database so the list matches what's actually stored
+    await loadData()
+    setReordering(false)
+  }
 
   // Delete a project after asking for confirmation
   async function handleDelete(project) {
@@ -123,12 +177,33 @@ function Dashboard() {
 
       {/* One row per project: thumbnail, title, edit and delete controls */}
       <div className="flex flex-col gap-2 mb-10">
-        {projects.map((project) => (
+        {projects.map((project, index) => (
           <div
             key={project.id}
             className="flex items-center justify-between border rounded-lg p-3"
           >
             <div className="flex items-center gap-3">
+              {/* Reorder controls - this is the order the site shows projects in */}
+              <div className="flex flex-col gap-1">
+                <button
+                  onClick={() => moveProject(index, -1)}
+                  disabled={index === 0 || reordering}
+                  title="Move up"
+                  aria-label={`Move ${project.title} up`}
+                  className="border rounded w-6 h-5 leading-none text-xs disabled:opacity-25 disabled:cursor-not-allowed hover:bg-neutral-100"
+                >
+                  ↑
+                </button>
+                <button
+                  onClick={() => moveProject(index, 1)}
+                  disabled={index === projects.length - 1 || reordering}
+                  title="Move down"
+                  aria-label={`Move ${project.title} down`}
+                  className="border rounded w-6 h-5 leading-none text-xs disabled:opacity-25 disabled:cursor-not-allowed hover:bg-neutral-100"
+                >
+                  ↓
+                </button>
+              </div>
               {/* Small thumbnail of the cover image */}
               <img
                 src={project.cover_image_url}

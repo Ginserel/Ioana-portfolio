@@ -1,13 +1,20 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabaseClient'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { CATEGORY_LABELS, categoryLabel } from '../lib/categories'
 
 function Gallery() {
   const [projects, setProjects] = useState([])
   const [loading, setLoading] = useState(true)
-  // Which category is currently selected. 'all' means show everything.
-  const [activeCategory, setActiveCategory] = useState('all')
+  // Which category is currently selected lives in the URL (/gallery?category=fine_art)
+  // so the home page can link straight to a filtered view. No param = show everything.
+  const [searchParams, setSearchParams] = useSearchParams()
+  const activeCategory = searchParams.get('category') || 'all'
+
+  function setActiveCategory(value) {
+    // 'all' clears the param so the URL stays clean
+    setSearchParams(value === 'all' ? {} : { category: value })
+  }
 
   useEffect(() => {
     async function fetchProjects() {
